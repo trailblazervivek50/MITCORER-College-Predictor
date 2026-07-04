@@ -156,10 +156,10 @@ export async function generatePDF({ predictionResponse }: PDFData): Promise<stri
     pdf.text(row.district, colDistrict, y + 2);
     pdf.text(branch, colBranch, y + 2);
     pdf.text(row.quota, colQuota, y + 2);
-    pdf.text(row.round1 || "-", colR1, y + 2);
-    pdf.text(row.round2 || "-", colR2, y + 2);
-    pdf.text(row.round3 || "-", colR3, y + 2);
-    pdf.text(row.round4 || "-", colR4, y + 2);
+    pdf.text(row.r1 || "-", colR1, y + 2);
+    pdf.text(row.r2 || "-", colR2, y + 2);
+    pdf.text(row.r3 || "-", colR3, y + 2);
+    pdf.text(row.r4 || "-", colR4, y + 2);
     pdf.setFont("helvetica", "bold");
     pdf.text(row.average || "-", colAvg, y + 2);
     y += 8;
