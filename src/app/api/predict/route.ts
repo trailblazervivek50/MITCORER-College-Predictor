@@ -82,14 +82,28 @@ export async function POST(request: Request) {
       const trs = card.find('.round-table tr');
       let round1 = '-', round2 = '-', round3 = '-', round4 = '-', average = '-';
       
-      if (trs.length >= 2) {
-        const tds = $(trs[1]).find('td');
-        round1 = $(tds[0]).text().trim() || '-';
-        round2 = $(tds[1]).text().trim() || '-';
-        round3 = $(tds[2]).text().trim() || '-';
-        round4 = $(tds[3]).text().trim() || '-';
-        average = $(tds[4]).text().trim() || '-';
-      }
+      // Parse every <tr> from the returned HTML table. We skip the first row (headers).
+      trs.each((rowIdx, rowEl) => {
+        if (rowIdx === 0) return; // Skip headers
+        
+        const tds = $(rowEl).find('td');
+        // Verify that every row contains the expected number of columns (5) before parsing
+        if (tds.length === 5) {
+          // Read every <td> separately and trim whitespace
+          const val1 = tds.eq(0).text().trim();
+          const val2 = tds.eq(1).text().trim();
+          const val3 = tds.eq(2).text().trim();
+          const val4 = tds.eq(3).text().trim();
+          const valAvg = tds.eq(4).text().trim();
+          
+          // Handle "-" values correctly by defaulting to "-" if empty
+          round1 = val1 && val1 !== '' ? val1 : '-';
+          round2 = val2 && val2 !== '' ? val2 : '-';
+          round3 = val3 && val3 !== '' ? val3 : '-';
+          round4 = val4 && val4 !== '' ? val4 : '-';
+          average = valAvg && valAvg !== '' ? valAvg : '-';
+        }
+      });
       
       if (collegeName) {
         predictions.push({
