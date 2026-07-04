@@ -149,7 +149,7 @@ export async function generatePDF({ predictionResponse }: PDFData): Promise<stri
     pdf.text((idx + 1).toString(), colRank, y + 2);
     
     // Truncate strings
-    const collegeName = row.name.length > 40 ? row.name.substring(0, 37) + "…" : row.name;
+    const collegeName = row.collegeName.length > 40 ? row.collegeName.substring(0, 37) + "…" : row.collegeName;
     const branch = row.branch.length > 40 ? row.branch.substring(0, 37) + "…" : row.branch;
     
     pdf.text(collegeName, colCollege, y + 2);
