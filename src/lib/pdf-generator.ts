@@ -54,7 +54,7 @@ export async function generatePDF({ predictionResponse }: PDFData): Promise<stri
   pdf.line(margin, y + 3, pageWidth - margin, y + 3);
   y += 12;
 
-  const { student, predictionSummary, topColleges } = predictionResponse;
+  const { student, predictionSummary, predictions } = predictionResponse;
 
   // ── Student Info Table & Summary ────────────────────────────────────────
   pdf.setFillColor(255, 240, 240);
@@ -133,8 +133,8 @@ export async function generatePDF({ predictionResponse }: PDFData): Promise<stri
   pdf.text("R4", colR4, y + 1);
   pdf.text("Average", colAvg, y + 1);
   y += 8;
-
-  topColleges.forEach((row, idx) => {
+  
+  predictions.forEach((row, idx) => {
     if (y > pageHeight - 25) {
       pdf.addPage();
       y = margin;
