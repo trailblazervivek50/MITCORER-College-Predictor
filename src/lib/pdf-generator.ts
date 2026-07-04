@@ -111,18 +111,20 @@ export async function generatePDF({ predictionResponse }: PDFData): Promise<stri
   pdf.setFont("helvetica", "bold");
   
   // Layout columns for Landscape (width = 297 - 30 = 267)
-  const colRank = margin + 2;
-  const colCollege = margin + 12;
-  const colDistrict = margin + 70;
-  const colBranch = margin + 90;
-  const colQuota = margin + 155;
-  const colR1 = margin + 175;
-  const colR2 = margin + 190;
-  const colR3 = margin + 205;
-  const colR4 = margin + 220;
-  const colAvg = margin + 235;
+  const colSrNo = margin;
+  const colCode = margin + 10;
+  const colCollege = margin + 28;
+  const colDistrict = margin + 100;
+  const colBranch = margin + 120;
+  const colQuota = margin + 175;
+  const colR1 = margin + 190;
+  const colR2 = margin + 205;
+  const colR3 = margin + 220;
+  const colR4 = margin + 235;
+  const colAvg = margin + 250;
 
-  pdf.text("Rank", colRank, y + 1);
+  pdf.text("Sr. No.", colSrNo, y + 1);
+  pdf.text("College Code", colCode, y + 1);
   pdf.text("College Name", colCollege, y + 1);
   pdf.text("District", colDistrict, y + 1);
   pdf.text("Branch", colBranch, y + 1);
@@ -146,10 +148,11 @@ export async function generatePDF({ predictionResponse }: PDFData): Promise<stri
     pdf.setTextColor(17, 17, 17);
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(7);
-    pdf.text((idx + 1).toString(), colRank, y + 2);
+    pdf.text((idx + 1).toString(), colSrNo, y + 2);
+    pdf.text(row.collegeCode || "N/A", colCode, y + 2);
     
     // Truncate strings
-    const collegeName = row.collegeName.length > 40 ? row.collegeName.substring(0, 37) + "…" : row.collegeName;
+    const collegeName = row.collegeName.length > 50 ? row.collegeName.substring(0, 47) + "…" : row.collegeName;
     const branch = row.branch.length > 40 ? row.branch.substring(0, 37) + "…" : row.branch;
     
     pdf.text(collegeName, colCollege, y + 2);

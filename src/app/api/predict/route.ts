@@ -57,6 +57,14 @@ export async function POST(request: Request) {
     const $ = cheerio.load(html);
     
     const predictions: any[] = [];
+    
+    // Lookup dataset mapping College Name -> Official DTE College Code
+    const dteCollegeCodes: Record<string, string> = {
+      "MIT College of Railway Engineering & Research, Barshi": "6901",
+      "JSPM Narhe Technical Campus, Pune": "6278",
+      "COEP Technological University": "6006",
+      "Shivnagar Vidya Prasarak Mandal's College of Engineering, Malegaon-Baramati": "6111"
+    };
 
     $('.result-card').each((i, el) => {
       const card = $(el);
@@ -65,7 +73,9 @@ export async function POST(request: Request) {
       const metaText = card.find('.result-meta').text().replace('📍', '').trim();
       const metaParts = metaText.split('|').map(s => s.trim());
       const district = metaParts[0] || '';
-      const university = metaParts[1] || '';
+      
+      // Fetch Official DTE College Code from lookup dataset, defaulting to "N/A"
+      const collegeCode = dteCollegeCodes[collegeName] || "N/A";
       
       let branch = '';
       let quota = '';
@@ -108,9 +118,9 @@ export async function POST(request: Request) {
       if (collegeName) {
         predictions.push({
           rank: i + 1,
+          collegeCode,
           collegeName,
           district,
-          university,
           branch,
           quota,
           r1: round1,

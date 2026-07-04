@@ -1,8 +1,8 @@
 export interface PredictedCollege {
   rank: number;
+  collegeCode: string;
   collegeName: string;
   district: string;
-  university: string;
   branch: string;
   quota: string;
   r1: string;
