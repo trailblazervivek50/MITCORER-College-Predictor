@@ -68,7 +68,7 @@ export async function generatePDF({ predictionResponse }: PDFData): Promise<stri
   const fields: [string, string][] = [
     ["Full Name", student.name],
     ["Mobile Number", student.mobile],
-    ["Marks / Percentile", student.marks.toString()],
+    ["Marks / Percentile", student.score],
     ["Category", student.category],
     ["Eligible Colleges", predictionSummary.eligibleCount.toString()],
   ];
