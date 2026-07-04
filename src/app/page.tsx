@@ -1,51 +1,63 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Hero from "@/components/Hero";
-import StudentForm from "@/components/StudentForm";
-import { PredictionService, StudentData, PredictedCollege } from "@/lib/PredictionService";
+import StudentForm, { FormData as StudentFormData } from "@/components/StudentForm";
+import { PredictionService, PredictionResponse } from "@/lib/PredictionService";
 import { generatePDF } from "@/lib/pdf-generator";
 import { motion } from "framer-motion";
-import { Download, Share2, CheckCircle, RefreshCcw } from "lucide-react";
+import { Download, Share2, RefreshCcw, FileText } from "lucide-react";
 
 export default function HomePage() {
-  const [studentData, setStudentData] = useState<StudentData | null>(null);
-  const [predictedColleges, setPredictedColleges] = useState<PredictedCollege[] | null>(null);
-  const [isLoadingPredictions, setIsLoadingPredictions] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [predictionResponse, setPredictionResponse] = useState<PredictionResponse | null>(null);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Check localStorage on mount for pending predictions
-    const pending = localStorage.getItem("predictionPending");
-    const storedData = localStorage.getItem("studentData");
+  const handleFormSubmit = async (data: StudentFormData) => {
+    // 1. Show loading screen immediately
+    setIsAnalyzing(true);
+    setPredictionResponse(null);
+    setPdfBlobUrl(null);
 
-    if (pending === "true" && storedData) {
-      try {
-        const parsedData = JSON.parse(storedData) as StudentData;
-        setStudentData(parsedData);
-        setIsLoadingPredictions(true);
-        
-        // Clear flag so we don't refetch on every reload unnecessarily
-        localStorage.removeItem("predictionPending");
+    // Scroll to the loading area smoothly
+    setTimeout(() => {
+      document.getElementById("analysis-section")?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
 
-        PredictionService.fetchPredictions(parsedData).then((colleges) => {
-          setPredictedColleges(colleges);
-          setIsLoadingPredictions(false);
-          // Scroll to results
-          setTimeout(() => {
-            document.getElementById("prediction-results")?.scrollIntoView({ behavior: "smooth" });
-          }, 100);
-        });
-      } catch (e) {
-        console.error("Failed to parse stored student data", e);
-        setIsLoadingPredictions(false);
-      }
+    try {
+      // 2. Call Prediction Service
+      const response = await PredictionService.predict({
+        fullName: data.fullName,
+        marksPercentile: data.marksPercentile,
+        category: data.category,
+        preferredCourse: data.preferredCourse,
+        collegePreference: data.collegePreference,
+        mobileNumber: data.mobileNumber,
+      });
+
+      setPredictionResponse(response);
+
+      // 3. Automatically generate PDF
+      const url = await generatePDF({ predictionResponse: response });
+      setPdfBlobUrl(url);
+    } catch (error) {
+      console.error("Prediction error:", error);
+      alert("Something went wrong during prediction. Please try again.");
+    } finally {
+      setIsAnalyzing(false);
     }
-  }, []);
+  };
 
-  const handleGeneratePDF = async () => {
-    if (studentData && predictedColleges) {
-      await generatePDF({ studentData, predictedColleges });
-    }
+  const handleDownload = () => {
+    if (!pdfBlobUrl || !predictionResponse) return;
+    
+    // Create an invisible anchor tag to trigger the download
+    const a = document.createElement("a");
+    a.href = pdfBlobUrl;
+    a.download = `Prediction_Report_${predictionResponse.student.name.replace(/\s+/g, "_")}_${Date.now()}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const handleShare = async () => {
@@ -54,7 +66,7 @@ export default function HomePage() {
         await navigator.share({
           title: "My MHT-CET & JEE Prediction Report",
           text: `Check out my top predicted colleges from the MITCORER Predictor!`,
-          url: window.location.href,
+          url: window.location.href, // If we had a hosted PDF, we'd link it. Fallback to app URL.
         });
       } catch (error) {
         console.log("Error sharing", error);
@@ -65,9 +77,8 @@ export default function HomePage() {
   };
 
   const handleReset = () => {
-    localStorage.removeItem("studentData");
-    setStudentData(null);
-    setPredictedColleges(null);
+    setPredictionResponse(null);
+    setPdfBlobUrl(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -76,85 +87,78 @@ export default function HomePage() {
       {/* Hero Section */}
       <Hero />
 
-      {/* Loading State for Predictions */}
-      {isLoadingPredictions && (
-        <section className="flex flex-col items-center justify-center py-20" style={{ minHeight: "400px" }}>
-          <RefreshCcw size={48} className="animate-spin text-[var(--mit-red)] mb-4" />
-          <h3 className="text-2xl font-semibold mb-2">Fetching Predictions...</h3>
-          <p className="text-[var(--gray-600)]">Retrieving your predicted colleges from the service.</p>
+      {/* Analysis Loading State */}
+      {isAnalyzing && (
+        <section id="analysis-section" className="flex flex-col items-center justify-center py-20 bg-[var(--gray-50)]" style={{ minHeight: "400px" }}>
+          <RefreshCcw size={48} className="animate-spin text-[var(--mit-red)] mb-6" />
+          <h3 className="text-2xl font-bold mb-3">Analyzing your profile...</h3>
+          <p className="text-[var(--gray-600)] text-lg max-w-md text-center">
+            Finding the best colleges based on your marks, category, and preferred course.
+            Please wait...
+          </p>
         </section>
       )}
 
-      {/* Prediction Results Section */}
-      {!isLoadingPredictions && predictedColleges && studentData && (
-        <section id="prediction-results" className="py-16 px-5" style={{ backgroundColor: "var(--gray-100)" }}>
-          <div className="max-w-[1000px] mx-auto">
+      {/* PDF Preview Section */}
+      {!isAnalyzing && pdfBlobUrl && predictionResponse && (
+        <section id="analysis-section" className="py-16 px-5" style={{ backgroundColor: "var(--gray-100)" }}>
+          <div className="max-w-[900px] mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="bg-white rounded-2xl shadow-lg border border-[var(--gray-200)] p-8 md:p-10"
+              className="bg-white rounded-2xl shadow-xl border border-[var(--gray-200)] overflow-hidden"
             >
-              <div className="flex flex-col items-center text-center mb-10">
-                <CheckCircle size={56} color="var(--mit-red)" strokeWidth={1.5} className="mb-4" />
-                <h2 className="text-3xl font-bold mb-2">Prediction Successful!</h2>
-                <p className="text-[var(--gray-600)] text-lg">
-                  We have automatically retrieved your predicted colleges based on your profile.
-                </p>
+              {/* Header */}
+              <div className="bg-[var(--mit-red)] text-white p-6 text-center">
+                <FileText size={40} className="mx-auto mb-3 opacity-90" />
+                <h2 className="text-2xl font-bold">Your Prediction Report is Ready</h2>
+                <p className="opacity-90 mt-1">Review your automatically generated PDF below.</p>
               </div>
 
-              {/* Student Summary */}
-              <div className="bg-[var(--gray-100)] rounded-xl p-6 mb-8 flex flex-wrap gap-6 justify-between">
-                <div>
-                  <div className="text-sm text-[var(--gray-500)] mb-1">Name</div>
-                  <div className="font-semibold text-lg">{studentData.fullName}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-[var(--gray-500)] mb-1">Score / Percentile</div>
-                  <div className="font-semibold text-lg">{studentData.marksPercentile}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-[var(--gray-500)] mb-1">Category</div>
-                  <div className="font-semibold text-lg">{studentData.category}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-[var(--gray-500)] mb-1">Preferred Course</div>
-                  <div className="font-semibold text-lg">{studentData.preferredCourse}</div>
-                </div>
+              {/* PDF Viewer */}
+              <div className="w-full bg-[var(--gray-200)] flex justify-center items-center" style={{ height: "600px" }}>
+                <iframe 
+                  src={`${pdfBlobUrl}#toolbar=0`} 
+                  className="w-full h-full border-none shadow-inner"
+                  title="PDF Preview"
+                />
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row justify-center gap-4 border-t border-[var(--gray-200)] pt-8">
-                <button
-                  onClick={handleGeneratePDF}
-                  className="btn btn-primary flex items-center justify-center gap-2"
-                  style={{ fontSize: "16px", padding: "14px 32px" }}
-                >
-                  <Download size={20} />
-                  Download Professional PDF
-                </button>
-                <button
-                  onClick={handleShare}
-                  className="btn btn-secondary flex items-center justify-center gap-2"
-                  style={{ fontSize: "16px", padding: "14px 32px" }}
-                >
-                  <Share2 size={20} />
-                  Share Results
-                </button>
-              </div>
-              <div className="flex justify-center mt-6">
-                 <button onClick={handleReset} className="text-[var(--gray-500)] hover:text-[var(--mit-red)] transition-colors underline text-sm">
-                   Start a new prediction
-                 </button>
+              <div className="p-8">
+                <div className="flex flex-col sm:flex-row justify-center gap-4 mb-6">
+                  <button
+                    onClick={handleDownload}
+                    className="btn btn-primary flex items-center justify-center gap-2"
+                    style={{ fontSize: "16px", padding: "14px 32px" }}
+                  >
+                    <Download size={20} />
+                    Download PDF
+                  </button>
+                  <button
+                    onClick={handleShare}
+                    className="btn btn-secondary flex items-center justify-center gap-2"
+                    style={{ fontSize: "16px", padding: "14px 32px" }}
+                  >
+                    <Share2 size={20} />
+                    Share PDF
+                  </button>
+                </div>
+                <div className="flex justify-center border-t border-[var(--gray-100)] pt-6">
+                   <button onClick={handleReset} className="text-[var(--gray-500)] hover:text-[var(--mit-red)] transition-colors underline text-sm font-medium">
+                     Generate Another Prediction
+                   </button>
+                </div>
               </div>
             </motion.div>
           </div>
         </section>
       )}
 
-      {/* Student Form (only show if we don't have results yet) */}
-      {!isLoadingPredictions && !predictedColleges && (
-        <StudentForm />
+      {/* Student Form (only show if not analyzing and no results) */}
+      {!isAnalyzing && !pdfBlobUrl && (
+        <StudentForm onSubmitDetails={handleFormSubmit} />
       )}
     </>
   );
