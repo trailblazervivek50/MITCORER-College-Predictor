@@ -1,17 +1,29 @@
 export interface PredictedCollege {
-  collegeName: string;
+  id?: string;
+  name: string;
+  district: string;
+  university: string;
   branch: string;
-  cutoff: string;
-  probability: string;
+  quota: string;
+  round1: string;
+  round2: string;
+  round3: string;
+  round4: string;
+  average: string;
 }
 
 export interface StudentData {
   fullName: string;
-  marksPercentile: string;
-  category: string;
-  preferredCourse: string;
-  collegePreference?: string;
   mobileNumber: string;
+  exam_type: string;
+  pred_mode: string;
+  score: string;
+  gender: string;
+  district: string;
+  category: string;
+  ews?: boolean;
+  tfws?: boolean;
+  branch?: string[];
 }
 
 export interface PredictionResponse {
@@ -19,7 +31,6 @@ export interface PredictionResponse {
     name: string;
     marks: number;
     category: string;
-    course: string;
     mobile: string;
   };
   predictionSummary: {
@@ -32,99 +43,50 @@ export interface PredictionResponse {
 /**
  * PredictionService
  *
- * This service mocks a backend prediction endpoint.
- * In the future, this should make a POST request to /api/predict-colleges
+ * This service makes a POST request to /api/predict to get the real results.
  */
 export class PredictionService {
   static async predict(studentData: StudentData): Promise<PredictionResponse> {
-    // Simulate network delay for backend processing
-    await new Promise((resolve) => setTimeout(resolve, 2500));
+    try {
+      const response = await fetch('/api/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(studentData),
+      });
 
-    const baseScore = parseFloat(studentData.marksPercentile) || 90;
-    const branch = studentData.preferredCourse || "Engineering";
+      if (!response.ok) {
+        throw new Error('Failed to fetch predictions');
+      }
 
-    // Generate 10 mock colleges
-    const colleges: PredictedCollege[] = [
-      {
-        collegeName: "College of Engineering, Pune (COEP)",
-        branch,
-        cutoff: Math.max(0, baseScore - 5).toFixed(2),
-        probability: "Low",
-      },
-      {
-        collegeName: "VJTI, Mumbai",
-        branch,
-        cutoff: Math.max(0, baseScore - 4.5).toFixed(2),
-        probability: "Low",
-      },
-      {
-        collegeName: "Pune Institute of Computer Technology (PICT)",
-        branch,
-        cutoff: Math.max(0, baseScore - 3).toFixed(2),
-        probability: "Medium",
-      },
-      {
-        collegeName: "Vishwakarma Institute of Technology (VIT), Pune",
-        branch,
-        cutoff: Math.max(0, baseScore - 2).toFixed(2),
-        probability: "Medium",
-      },
-      {
-        collegeName: "MIT College of Railway Engineering & Research, Barshi",
-        branch,
-        cutoff: Math.max(0, baseScore + 1).toFixed(2),
-        probability: "High",
-      },
-      {
-        collegeName: "Pimpri Chinchwad College of Engineering (PCCOE)",
-        branch,
-        cutoff: Math.max(0, baseScore + 2).toFixed(2),
-        probability: "High",
-      },
-      {
-        collegeName: "Walchand College of Engineering, Sangli",
-        branch,
-        cutoff: Math.max(0, baseScore - 1).toFixed(2),
-        probability: "Medium",
-      },
-      {
-        collegeName: "Sardar Patel Institute of Technology (SPIT), Mumbai",
-        branch,
-        cutoff: Math.max(0, baseScore - 3.5).toFixed(2),
-        probability: "Low",
-      },
-      {
-        collegeName: "Ramrao Adik Institute of Technology (RAIT), Navi Mumbai",
-        branch,
-        cutoff: Math.max(0, baseScore + 3).toFixed(2),
-        probability: "High",
-      },
-      {
-        collegeName: "Government College of Engineering, Aurangabad",
-        branch,
-        cutoff: Math.max(0, baseScore + 0.5).toFixed(2),
-        probability: "High",
-      },
-    ];
+      const data = await response.json();
+      
+      const colleges: PredictedCollege[] = data.colleges || [];
 
-    // Sort by cutoff descending (closest to score first)
-    colleges.sort((a, b) => parseFloat(b.cutoff) - parseFloat(a.cutoff));
+      // Calculate a pseudo "overallChance" based on count of results for now
+      const eligibleCount = colleges.length;
+      let overallChance = "Low";
+      if (eligibleCount > 50) overallChance = "Very High";
+      else if (eligibleCount > 20) overallChance = "High";
+      else if (eligibleCount > 5) overallChance = "Medium";
 
-    const overallChance = baseScore > 90 ? "Very High" : baseScore > 75 ? "High" : baseScore > 60 ? "Medium" : "Low";
-
-    return {
-      student: {
-        name: studentData.fullName,
-        marks: baseScore,
-        category: studentData.category,
-        course: studentData.preferredCourse,
-        mobile: studentData.mobileNumber,
-      },
-      predictionSummary: {
-        overallChance,
-        eligibleCount: colleges.length,
-      },
-      topColleges: colleges,
-    };
+      return {
+        student: {
+          name: studentData.fullName,
+          marks: parseFloat(studentData.score) || 0,
+          category: studentData.category,
+          mobile: studentData.mobileNumber,
+        },
+        predictionSummary: {
+          overallChance,
+          eligibleCount,
+        },
+        topColleges: colleges,
+      };
+    } catch (error) {
+      console.error('Prediction error:', error);
+      throw error;
+    }
   }
 }

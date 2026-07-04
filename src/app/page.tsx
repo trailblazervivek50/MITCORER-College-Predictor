@@ -28,11 +28,16 @@ export default function HomePage() {
       // 2. Call Prediction Service
       const response = await PredictionService.predict({
         fullName: data.fullName,
-        marksPercentile: data.marksPercentile,
-        category: data.category,
-        preferredCourse: data.preferredCourse,
-        collegePreference: data.collegePreference,
         mobileNumber: data.mobileNumber,
+        exam_type: data.exam_type,
+        pred_mode: data.pred_mode,
+        score: data.score,
+        gender: data.gender,
+        district: data.district,
+        category: data.category,
+        ews: data.ews,
+        tfws: data.tfws,
+        branch: data.branch,
       });
 
       setPredictionResponse(response);
