@@ -1,0 +1,150 @@
+.nav {
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+  position: sticky;
+  top: 97px; /* below letterhead */
+  z-index: 999;
+  transition: background 0.3s ease;
+}
+
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.brandMIT {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--mit-red);
+  letter-spacing: 0.01em;
+}
+.brandAmp {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0 2px;
+}
+.brandJEE {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.link {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.link:hover {
+  color: var(--mit-red);
+  background: rgba(204,0,0,0.06);
+}
+.active {
+  color: var(--mit-red);
+  font-weight: 600;
+  background: rgba(204,0,0,0.08);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.themeBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.themeBtn:hover {
+  border-color: var(--mit-red);
+  color: var(--mit-red);
+  background: rgba(204,0,0,0.06);
+}
+
+.mobileMenu {
+  display: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.mobileMenu:hover {
+  border-color: var(--mit-red);
+  color: var(--mit-red);
+}
+
+.mobileDropdown {
+  border-top: 1px solid var(--border-color);
+  padding: 12px 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--nav-bg);
+}
+.mobileLink {
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.mobileLink:hover {
+  color: var(--mit-red);
+  background: rgba(204,0,0,0.06);
+}
+.mobileLinkHighlight {
+  color: var(--mit-red);
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .links { display: none; }
+  .mobileMenu { display: flex; }
+  .inner { padding: 0 16px; }
+}
+
+@media (max-width: 480px) {
+  .brandJEE { display: none; }
+}

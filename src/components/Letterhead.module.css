@@ -1,0 +1,86 @@
+.letterhead {
+  background: var(--nav-bg);
+  border-bottom: 3px solid var(--mit-red);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  padding: 10px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  transition: background 0.3s ease;
+}
+
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.logoWrap {
+  flex-shrink: 0;
+}
+
+.logo {
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.textWrap {
+  flex: 1;
+}
+
+.groupName {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--gray-700);
+  letter-spacing: 0.02em;
+  margin-bottom: 2px;
+}
+
+.collegeName {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--mit-red);
+  line-height: 1.2;
+  margin-bottom: 3px;
+  font-family: 'Inter', sans-serif;
+}
+
+.details {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 1px;
+}
+
+.dteCode {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.03em;
+}
+
+@media (max-width: 768px) {
+  .inner {
+    padding: 0 16px;
+    gap: 12px;
+  }
+  .collegeName {
+    font-size: 14px;
+  }
+  .groupName, .details, .dteCode {
+    font-size: 10px;
+  }
+  .logo {
+    width: 48px !important;
+    height: 48px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .collegeName {
+    font-size: 12px;
+  }
+}
