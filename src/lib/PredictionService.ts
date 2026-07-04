@@ -1,14 +1,14 @@
 export interface PredictedCollege {
-  id?: string;
-  name: string;
+  rank: number;
+  collegeName: string;
   district: string;
   university: string;
   branch: string;
   quota: string;
-  round1: string;
-  round2: string;
-  round3: string;
-  round4: string;
+  r1: string;
+  r2: string;
+  r3: string;
+  r4: string;
   average: string;
 }
 
@@ -29,15 +29,16 @@ export interface StudentData {
 export interface PredictionResponse {
   student: {
     name: string;
-    marks: number;
-    category: string;
     mobile: string;
+    score: string;
+    category: string;
+    district: string;
+    gender: string;
   };
   predictionSummary: {
-    overallChance: string;
     eligibleCount: number;
   };
-  topColleges: PredictedCollege[];
+  predictions: PredictedCollege[];
 }
 
 /**
@@ -57,32 +58,27 @@ export class PredictionService {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch predictions');
+        throw new Error('Failed to fetch predictions from backend');
       }
 
       const data = await response.json();
       
-      const colleges: PredictedCollege[] = data.colleges || [];
-
-      // Calculate a pseudo "overallChance" based on count of results for now
-      const eligibleCount = colleges.length;
-      let overallChance = "Low";
-      if (eligibleCount > 50) overallChance = "Very High";
-      else if (eligibleCount > 20) overallChance = "High";
-      else if (eligibleCount > 5) overallChance = "Medium";
+      const predictions: PredictedCollege[] = data.predictions || [];
+      const eligibleCount = predictions.length;
 
       return {
         student: {
           name: studentData.fullName,
-          marks: parseFloat(studentData.score) || 0,
-          category: studentData.category,
           mobile: studentData.mobileNumber,
+          score: studentData.score,
+          category: studentData.category,
+          district: studentData.district,
+          gender: studentData.gender,
         },
         predictionSummary: {
-          overallChance,
           eligibleCount,
         },
-        topColleges: colleges,
+        predictions: predictions,
       };
     } catch (error) {
       console.error('Prediction error:', error);

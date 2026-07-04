@@ -6,18 +6,20 @@ import StudentForm, { FormData as StudentFormData } from "@/components/StudentFo
 import { PredictionService, PredictionResponse } from "@/lib/PredictionService";
 import { generatePDF } from "@/lib/pdf-generator";
 import { motion } from "framer-motion";
-import { Download, Share2, RefreshCcw, FileText } from "lucide-react";
+import { Download, Share2, RefreshCcw, FileText, AlertCircle } from "lucide-react";
 
 export default function HomePage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [predictionResponse, setPredictionResponse] = useState<PredictionResponse | null>(null);
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleFormSubmit = async (data: StudentFormData) => {
     // 1. Show loading screen immediately
     setIsAnalyzing(true);
     setPredictionResponse(null);
     setPdfBlobUrl(null);
+    setErrorMsg(null);
 
     // Scroll to the loading area smoothly
     setTimeout(() => {
@@ -40,14 +42,20 @@ export default function HomePage() {
         branch: data.branch,
       });
 
+      // 3. Handle 0 colleges
+      if (!response.predictions || response.predictions.length === 0) {
+        setErrorMsg("Prediction data could not be fetched or no eligible colleges found. Please try again.");
+        return; // Do NOT generate empty PDF
+      }
+
       setPredictionResponse(response);
 
-      // 3. Automatically generate PDF
+      // 4. Automatically generate PDF
       const url = await generatePDF({ predictionResponse: response });
       setPdfBlobUrl(url);
     } catch (error) {
       console.error("Prediction error:", error);
-      alert("Something went wrong during prediction. Please try again.");
+      setErrorMsg("An error occurred while fetching predictions. Please try again.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -84,6 +92,7 @@ export default function HomePage() {
   const handleReset = () => {
     setPredictionResponse(null);
     setPdfBlobUrl(null);
+    setErrorMsg(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -104,10 +113,24 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* Error State */}
+      {!isAnalyzing && errorMsg && (
+        <section id="analysis-section" className="py-16 px-5" style={{ backgroundColor: "var(--gray-100)" }}>
+          <div className="max-w-[700px] mx-auto text-center bg-white p-10 rounded-2xl shadow-md border border-[var(--gray-200)]">
+             <AlertCircle size={48} className="text-red-500 mx-auto mb-4" />
+             <h3 className="text-xl font-bold mb-2">Oops! Something went wrong</h3>
+             <p className="text-[var(--gray-600)] mb-6">{errorMsg}</p>
+             <button onClick={handleReset} className="btn btn-primary" style={{ padding: "10px 24px" }}>
+               Go Back & Try Again
+             </button>
+          </div>
+        </section>
+      )}
+
       {/* PDF Preview Section */}
       {!isAnalyzing && pdfBlobUrl && predictionResponse && (
         <section id="analysis-section" className="py-16 px-5" style={{ backgroundColor: "var(--gray-100)" }}>
-          <div className="max-w-[900px] mx-auto">
+          <div className="max-w-[1000px] mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -118,7 +141,7 @@ export default function HomePage() {
               <div className="bg-[var(--mit-red)] text-white p-6 text-center">
                 <FileText size={40} className="mx-auto mb-3 opacity-90" />
                 <h2 className="text-2xl font-bold">Your Prediction Report is Ready</h2>
-                <p className="opacity-90 mt-1">Review your automatically generated PDF below.</p>
+                <p className="opacity-90 mt-1">Review your automatically generated PDF below. We found {predictionResponse.predictionSummary.eligibleCount} eligible colleges.</p>
               </div>
 
               {/* PDF Viewer */}
@@ -161,8 +184,8 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* Student Form (only show if not analyzing and no results) */}
-      {!isAnalyzing && !pdfBlobUrl && (
+      {/* Student Form (only show if not analyzing and no results/errors) */}
+      {!isAnalyzing && !pdfBlobUrl && !errorMsg && (
         <StudentForm onSubmitDetails={handleFormSubmit} />
       )}
     </>
