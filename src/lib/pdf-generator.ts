@@ -83,7 +83,7 @@ export async function generatePDF({ predictionResponse }: PDFData): Promise<stri
   pdf.line(margin, y + 3, pageWidth - margin, y + 3);
   y += 12;
 
-  const { student, predictionSummary, predictions } = predictionResponse;
+  const { studentDetails, predictions } = predictionResponse;
 
   // ── Student Info Table & Summary ────────────────────────────────────────
   pdf.setFillColor(255, 240, 240);
@@ -95,11 +95,11 @@ export async function generatePDF({ predictionResponse }: PDFData): Promise<stri
   y += 10;
 
   const fields: [string, string][] = [
-    ["Full Name", student.name],
-    ["Mobile Number", student.mobile],
-    ["Marks / Percentile", student.score],
-    ["Category", student.category],
-    ["Eligible Colleges", predictionSummary.eligibleCount.toString()],
+    ["Full Name", studentDetails.fullName],
+    ["Mobile Number", studentDetails.mobileNumber],
+    ["Marks / Percentile", studentDetails.score],
+    ["Category", studentDetails.category],
+    ["Eligible Colleges", predictions.length.toString()],
   ];
 
   pdf.setFontSize(10);
