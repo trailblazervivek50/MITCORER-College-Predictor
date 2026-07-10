@@ -40,15 +40,14 @@ export default function HomePage() {
   };
 
   const handleDownload = () => {
-    if (!pdfBlobUrl || !predictionResponse) return;
-    
-    // Create an invisible anchor tag to trigger the download
-    const a = document.createElement("a");
-    a.href = pdfBlobUrl;
-    a.download = `Prediction_Report_${predictionResponse.student.name.replace(/\s+/g, "_")}_${Date.now()}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    if (pdfBlobUrl && predictionResponse) {
+      const a = document.createElement("a");
+      a.href = pdfBlobUrl;
+      a.download = `Prediction_Report_${predictionResponse.studentDetails.fullName.replace(/\s+/g, "_")}_${Date.now()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
   };
 
   const handleShare = async () => {
