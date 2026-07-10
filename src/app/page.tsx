@@ -26,11 +26,29 @@ export default function HomePage() {
     }, 100);
 
     try {
-      // API is currently deleted for refactoring, so we simulate a delay and fail gracefully.
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      
-      setErrorMsg("The prediction database is currently undergoing a complete architectural upgrade. Please check back later.");
-      return;
+      const res = await fetch("/api/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch predictions");
+      }
+
+      const response = await res.json();
+
+      // 3. Handle 0 colleges
+      if (!response.predictions || response.predictions.length === 0) {
+        setErrorMsg("No eligible colleges found matching your criteria. Try adjusting your preferences.");
+        return; // Do NOT generate empty PDF
+      }
+
+      setPredictionResponse(response);
+
+      // 4. Automatically generate PDF
+      const url = await generatePDF({ predictionResponse: response });
+      setPdfBlobUrl(url);
     } catch (error) {
       console.error("Prediction error:", error);
       setErrorMsg("An error occurred while fetching predictions. Please try again.");
