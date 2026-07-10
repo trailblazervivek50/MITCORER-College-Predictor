@@ -4,7 +4,36 @@
  */
 
 import jsPDF from "jspdf";
-import { PredictionResponse } from "./PredictionService";
+export interface PredictedCollege {
+  rank: number;
+  collegeCode: string;
+  collegeName: string;
+  district: string;
+  branch: string;
+  quota: string;
+  r1: string;
+  r2: string;
+  r3: string;
+  r4: string;
+  average: string;
+}
+
+export interface PredictionResponse {
+  predictions: PredictedCollege[];
+  studentDetails: {
+    fullName: string;
+    mobileNumber: string;
+    exam_type: string;
+    pred_mode: string;
+    score: string;
+    gender: string;
+    district: string;
+    category: string;
+    ews: string;
+    tfws: string;
+    branch: string;
+  };
+}
 
 interface PDFData {
   predictionResponse: PredictionResponse;

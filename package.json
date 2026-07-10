@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
-    "cheerio": "^1.2.0",
     "framer-motion": "^12.42.2",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.23.0",

@@ -3,8 +3,7 @@
 import { useState } from "react";
 import Hero from "@/components/Hero";
 import StudentForm, { FormData as StudentFormData } from "@/components/StudentForm";
-import { PredictionService, PredictionResponse } from "@/lib/PredictionService";
-import { generatePDF } from "@/lib/pdf-generator";
+import { generatePDF, PredictionResponse } from "@/lib/pdf-generator";
 import { motion } from "framer-motion";
 import { Download, Share2, RefreshCcw, FileText, AlertCircle } from "lucide-react";
 
@@ -27,32 +26,11 @@ export default function HomePage() {
     }, 100);
 
     try {
-      // 2. Call Prediction Service
-      const response = await PredictionService.predict({
-        fullName: data.fullName,
-        mobileNumber: data.mobileNumber,
-        exam_type: data.exam_type,
-        pred_mode: data.pred_mode,
-        score: data.score,
-        gender: data.gender,
-        district: data.district,
-        category: data.category,
-        ews: data.ews,
-        tfws: data.tfws,
-        branch: data.branch,
-      });
-
-      // 3. Handle 0 colleges
-      if (!response.predictions || response.predictions.length === 0) {
-        setErrorMsg("Prediction data could not be fetched or no eligible colleges found. Please try again.");
-        return; // Do NOT generate empty PDF
-      }
-
-      setPredictionResponse(response);
-
-      // 4. Automatically generate PDF
-      const url = await generatePDF({ predictionResponse: response });
-      setPdfBlobUrl(url);
+      // API is currently deleted for refactoring, so we simulate a delay and fail gracefully.
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      
+      setErrorMsg("The prediction database is currently undergoing a complete architectural upgrade. Please check back later.");
+      return;
     } catch (error) {
       console.error("Prediction error:", error);
       setErrorMsg("An error occurred while fetching predictions. Please try again.");
