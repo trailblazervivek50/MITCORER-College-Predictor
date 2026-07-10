@@ -118,7 +118,7 @@ export default function HomePage() {
               <div className="bg-[var(--mit-red)] text-white p-6 text-center">
                 <FileText size={40} className="mx-auto mb-3 opacity-90" />
                 <h2 className="text-2xl font-bold">Your Prediction Report is Ready</h2>
-                <p className="opacity-90 mt-1">Review your automatically generated PDF below. We found {predictionResponse.predictionSummary.eligibleCount} eligible colleges.</p>
+                <p className="opacity-90 mt-1">Review your automatically generated PDF below. We found {predictionResponse.predictions.length} eligible colleges.</p>
               </div>
 
               {/* PDF Viewer */}
